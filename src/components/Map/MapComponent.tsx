@@ -62,8 +62,9 @@ function DrawControl({ onPolygonCreate }: DrawControlProps) {
 
     map.addControl(drawControl);
 
-    const handleDrawCreated = (e: L.DrawEvents.Created) => {
-      const { layer } = e;
+    const handleDrawCreated = (e: L.LeafletEvent) => {
+      const drawEvent = e as L.DrawEvents.Created;
+      const { layer } = drawEvent;
       const leafletLayer = layer as L.Polygon;
       const coordinates: LatLng[] = (leafletLayer.getLatLngs()[0] as L.LatLng[]).map((latlng: L.LatLng) => ({
         lat: latlng.lat,
