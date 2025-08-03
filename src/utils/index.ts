@@ -195,9 +195,16 @@ export function getTimelineRange(): { min: Date; max: Date } {
 /**
  * Convert timestamp to hours since timeline start
  */
-export function dateToTimelineValue(date: Date): number {
+export function dateToTimelineValue(date: Date | string): number {
   const { min } = getTimelineRange();
-  return Math.floor((date.getTime() - min.getTime()) / (1000 * 60 * 60));
+  const safeDate = date instanceof Date ? date : new Date(date);
+
+  if (isNaN(safeDate.getTime())) {
+    console.warn('Invalid date provided to dateToTimelineValue:', date);
+    return 0;
+  }
+
+  return Math.floor((safeDate.getTime() - min.getTime()) / (1000 * 60 * 60));
 }
 
 /**
@@ -205,6 +212,12 @@ export function dateToTimelineValue(date: Date): number {
  */
 export function timelineValueToDate(value: number): Date {
   const { min } = getTimelineRange();
+
+  if (typeof value !== 'number' || isNaN(value)) {
+    console.warn('Invalid value provided to timelineValueToDate:', value);
+    return new Date();
+  }
+
   return new Date(min.getTime() + value * 60 * 60 * 1000);
 }
 

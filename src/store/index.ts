@@ -27,11 +27,16 @@ interface AppStore {
   getPolygonById: (id: string) => Polygon | undefined;
 }
 
-const initialTimeRange: TimeRange = {
-  start: new Date(),
-  end: new Date(),
-  mode: 'single',
+const createInitialTimeRange = (): TimeRange => {
+  const now = new Date();
+  return {
+    start: now,
+    end: new Date(now.getTime() + 24 * 60 * 60 * 1000), // 24 hours later
+    mode: 'single',
+  };
 };
+
+const initialTimeRange = createInitialTimeRange();
 
 export const useAppStore = create<AppStore>()(
   persist(
@@ -136,7 +141,54 @@ export const useAppStore = create<AppStore>()(
       name: 'map-dashboard-storage',
       storage: createJSONStorage(() => {
         if (typeof window !== 'undefined') {
-          return localStorage;
+          return {
+            getItem: (name: string) => {
+              try {
+                const item = localStorage.getItem(name);
+                if (!item) return null;
+
+                const parsed = JSON.parse(item);
+
+                // Convert date strings back to Date objects
+                if (parsed.state) {
+                  if (parsed.state.timeRange) {
+                    if (parsed.state.timeRange.start) {
+                      parsed.state.timeRange.start = new Date(parsed.state.timeRange.start);
+                    }
+                    if (parsed.state.timeRange.end) {
+                      parsed.state.timeRange.end = new Date(parsed.state.timeRange.end);
+                    }
+                  }
+
+                  if (parsed.state.polygons) {
+                    parsed.state.polygons = parsed.state.polygons.map((polygon: any) => ({
+                      ...polygon,
+                      createdAt: polygon.createdAt ? new Date(polygon.createdAt) : new Date(),
+                    }));
+                  }
+                }
+
+                return parsed;
+              } catch (error) {
+                console.warn('Failed to parse stored data:', error);
+                return null;
+              }
+            },
+            setItem: (name: string, value: string) => {
+              try {
+                localStorage.setItem(name, value);
+              } catch (error) {
+                console.warn('Failed to store data:', error);
+              }
+            },
+            removeItem: (name: string) => {
+              try {
+                localStorage.removeItem(name);
+              } catch (error) {
+                console.warn('Failed to remove stored data:', error);
+              }
+            },
+          };
         }
         return {
           getItem: () => null,

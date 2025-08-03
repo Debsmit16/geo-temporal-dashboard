@@ -15,12 +15,19 @@ export default function TimelineSlider() {
   const { setTimeRange } = useUIActions();
   const [mode, setMode] = useState<'single' | 'range'>('single');
 
+  // Ensure timeRange dates are proper Date objects
+  const safeTimeRange = {
+    start: timeRange.start instanceof Date ? timeRange.start : new Date(timeRange.start),
+    end: timeRange.end instanceof Date ? timeRange.end : new Date(timeRange.end),
+    mode: timeRange.mode,
+  };
+
   const { min, max } = getTimelineRange();
   const totalHours = Math.floor((max.getTime() - min.getTime()) / (1000 * 60 * 60));
 
   // Convert current time range to slider values
-  const currentStartValue = dateToTimelineValue(timeRange.start);
-  const currentEndValue = timeRange.mode === 'range' ? dateToTimelineValue(timeRange.end) : currentStartValue;
+  const currentStartValue = dateToTimelineValue(safeTimeRange.start);
+  const currentEndValue = safeTimeRange.mode === 'range' ? dateToTimelineValue(safeTimeRange.end) : currentStartValue;
   
   const handleSliderChange = useCallback((values: number[]) => {
     const startDate = timelineValueToDate(values[0]);
