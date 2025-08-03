@@ -69,7 +69,12 @@ export function useWeatherData({ polygons, selectedTime }: UseWeatherDataProps) 
           };
         });
       } catch (error) {
-        console.error(`Error fetching weather data for polygon ${polygon.id}:`, error);
+        // Only log actual application errors, not extension errors
+        if (error instanceof Error &&
+            !error.message.includes('message channel closed') &&
+            !error.message.includes('runtime.lastError')) {
+          console.error(`Error fetching weather data for polygon ${polygon.id}:`, error);
+        }
         
         setState(prev => {
           const newLoading = new Set(prev.loading);
