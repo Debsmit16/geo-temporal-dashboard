@@ -4,63 +4,44 @@ import { useEffect } from 'react';
 
 export default function ErrorBoundary({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // Suppress browser extension errors that don't affect the app
-    const originalError = console.error;
-    const originalWarn = console.warn;
+    // Only run in browser environment
+    if (typeof window === 'undefined') return;
 
-    console.error = function(...args) {
-      const message = args[0];
-      if (typeof message === 'string') {
-        // Suppress common extension-related errors
-        if (
-          message.includes('message channel closed') ||
-          message.includes('runtime.lastError') ||
-          message.includes('Extension context invalidated') ||
-          message.includes('Could not establish connection')
-        ) {
-          return; // Don't log these errors
+    try {
+      // Handle unhandled promise rejections from extensions
+      const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+        try {
+          const reason = event.reason;
+          if (reason && typeof reason === 'object' && reason.message) {
+            const message = String(reason.message);
+            if (
+              message.includes('message channel closed') ||
+              message.includes('runtime.lastError') ||
+              message.includes('Extension context invalidated')
+            ) {
+              event.preventDefault(); // Prevent the error from being logged
+              return;
+            }
+          }
+        } catch (e) {
+          // Ignore errors in error handling
         }
-      }
-      originalError.apply(console, args);
-    };
+      };
 
-    console.warn = function(...args) {
-      const message = args[0];
-      if (typeof message === 'string') {
-        // Suppress extension-related warnings
-        if (
-          message.includes('runtime.lastError') ||
-          message.includes('Extension')
-        ) {
-          return; // Don't log these warnings
+      window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+      // Cleanup
+      return () => {
+        try {
+          window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+        } catch (e) {
+          // Ignore cleanup errors
         }
-      }
-      originalWarn.apply(console, args);
-    };
-
-    // Handle unhandled promise rejections from extensions
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      const reason = event.reason;
-      if (reason && typeof reason.message === 'string') {
-        if (
-          reason.message.includes('message channel closed') ||
-          reason.message.includes('runtime.lastError') ||
-          reason.message.includes('Extension context invalidated')
-        ) {
-          event.preventDefault(); // Prevent the error from being logged
-          return;
-        }
-      }
-    };
-
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-
-    // Cleanup
-    return () => {
-      console.error = originalError;
-      console.warn = originalWarn;
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-    };
+      };
+    } catch (e) {
+      // If anything fails, just return without error handling
+      console.warn('Error boundary setup failed:', e);
+    }
   }, []);
 
   return <>{children}</>;
