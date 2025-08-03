@@ -60,17 +60,17 @@ interface LoadingCardProps {
 
 export function LoadingCard({ title = 'Loading...', description, className }: LoadingCardProps) {
   return (
-    <div className={cn('glass rounded-xl p-6 border border-white/20 animate-pulse', className)}>
+    <div className={cn('glass-strong rounded-2xl p-6 border border-white/20 animate-pulse hover-lift', className)}>
       <div className="flex items-center space-x-4">
-        <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-xl flex items-center justify-center">
-          <LoadingSpinner size="md" />
+        <div className="w-12 h-12 gradient-primary rounded-2xl flex items-center justify-center">
+          <LoadingSpinner size="md" className="border-white border-t-transparent" />
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-1">
+          <h3 className="text-lg font-semibold text-white mb-1">
             {title}
           </h3>
           {description && (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-white/70">
               {description}
             </p>
           )}
@@ -106,17 +106,17 @@ export function LoadingOverlay({ isVisible, message = 'Loading...', className }:
 
   return (
     <div className={cn(
-      'absolute inset-0 glass backdrop-blur-sm flex items-center justify-center z-50 rounded-xl',
+      'absolute inset-0 glass-strong backdrop-blur-md flex items-center justify-center z-50 rounded-2xl',
       className
     )}>
-      <div className="text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center animate-pulse">
+      <div className="text-center animate-scale-in">
+        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl gradient-primary flex items-center justify-center glow">
           <LoadingSpinner size="lg" className="border-white border-t-transparent" />
         </div>
-        <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">
+        <h3 className="text-xl font-semibold text-white mb-3">
           {message}
         </h3>
-        <LoadingDots />
+        <LoadingDots className="justify-center" />
       </div>
     </div>
   );

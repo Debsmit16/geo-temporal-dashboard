@@ -109,9 +109,11 @@ interface PolygonLayerProps {
   polygon: Polygon;
   isSelected: boolean;
   onSelect: () => void;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-function PolygonLayer({ polygon, isSelected, onSelect }: PolygonLayerProps) {
+function PolygonLayer({ polygon, isSelected, onSelect, className, style }: PolygonLayerProps) {
   const positions: [number, number][] = polygon.coordinates.map(coord => [coord.lat, coord.lng]);
 
   const pathOptions = {
@@ -121,7 +123,7 @@ function PolygonLayer({ polygon, isSelected, onSelect }: PolygonLayerProps) {
     fillOpacity: isSelected ? 0.3 : 0.2,
     fillColor: polygon.currentColor || '#64748b',
     dashArray: isSelected ? '10, 5' : undefined,
-    className: 'polygon-layer transition-all duration-300 hover:brightness-110',
+    className: `polygon-layer transition-all duration-300 hover:brightness-110 ${className || ''}`,
   };
 
   return (
@@ -186,12 +188,14 @@ export default function MapComponent() {
 
         <DrawControl onPolygonCreate={handlePolygonCreate} />
 
-        {polygons.map((polygon) => (
+        {polygons.map((polygon, index) => (
           <PolygonLayer
             key={polygon.id}
             polygon={polygon}
             isSelected={selectedPolygon?.id === polygon.id}
             onSelect={() => handlePolygonSelect(polygon.id)}
+            className="animate-scale-in"
+            style={{ animationDelay: `${index * 100}ms` }}
           />
         ))}
       </MapContainer>

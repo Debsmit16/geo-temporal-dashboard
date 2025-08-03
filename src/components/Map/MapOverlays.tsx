@@ -1,6 +1,7 @@
 'use client';
 
-import { Thermometer, Droplets, Wind, Eye, Plus, Minus } from 'lucide-react';
+import { useState } from 'react';
+import { Thermometer, Droplets, Wind, Eye, Palette, Layers, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -11,128 +12,166 @@ interface MapOverlaysProps {
   isDrawing?: boolean;
 }
 
-export default function MapOverlays({ 
-  onZoomIn, 
-  onZoomOut, 
-  onToggleDrawing, 
-  isDrawing = false 
+export default function MapOverlays({
+  onZoomIn,
+  onZoomOut,
+  onToggleDrawing,
+  isDrawing = false
 }: MapOverlaysProps) {
+  const [isDrawingPanelExpanded, setIsDrawingPanelExpanded] = useState(false);
+  const [isLegendExpanded, setIsLegendExpanded] = useState(true);
+
   return (
     <>
-      {/* Drawing Tools - Top Left */}
-      <div className="absolute top-4 left-4 z-[1000]">
-        <div className="flex flex-col space-y-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onToggleDrawing}
-            className={`w-12 h-12 rounded-xl glass border border-white/20 hover:bg-white/10 transition-all ${
-              isDrawing 
-                ? 'bg-blue-500/20 text-blue-300 border-blue-500/30 shadow-lg shadow-blue-500/25' 
-                : 'text-white/80 hover:text-white'
-            }`}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-          </Button>
-          
-          <div className="flex flex-col space-y-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onZoomIn}
-              className="w-12 h-12 rounded-xl glass border border-white/20 hover:bg-white/10 text-white/80 hover:text-white"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onZoomOut}
-              className="w-12 h-12 rounded-xl glass border border-white/20 hover:bg-white/10 text-white/80 hover:text-white"
-            >
-              <Minus className="w-4 h-4" />
-            </Button>
-          </div>
+      {/* Top-Left: Drawing Tools Panel */}
+      <div className="absolute top-6 left-6 z-[1000]">
+        <div className="glass-strong rounded-2xl border border-white/20 overflow-hidden hover-lift">
+          {/* Minimized State */}
+          {!isDrawingPanelExpanded && (
+            <div className="p-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsDrawingPanelExpanded(true)}
+                className="w-10 h-10 rounded-xl hover:bg-white/10 text-white/80 hover:text-white p-0"
+              >
+                <Palette className="w-5 h-5" />
+              </Button>
+            </div>
+          )}
+
+          {/* Expanded State */}
+          {isDrawingPanelExpanded && (
+            <div className="p-4 min-w-[200px]">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-white">Drawing Tools</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsDrawingPanelExpanded(false)}
+                  className="w-6 h-6 rounded-lg hover:bg-white/10 text-white/60 hover:text-white p-0"
+                >
+                  <ChevronUp className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onToggleDrawing}
+                  className={`w-full justify-start rounded-xl transition-all ${
+                    isDrawing
+                      ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30 glow'
+                      : 'text-white/80 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  Draw Polygon
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start rounded-xl text-white/80 hover:text-white hover:bg-white/10"
+                >
+                  <Layers className="w-4 h-4 mr-2" />
+                  Manage Layers
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Temperature Legend - Bottom Left */}
-      <div className="absolute bottom-4 left-4 z-[1000]">
-        <Card className="glass-strong border-white/20 w-64 animate-fade-in">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-white text-sm flex items-center space-x-2">
-              <Thermometer className="w-4 h-4 text-red-400" />
-              <span>Temperature Scale</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-2">
-              <div className="flex items-center space-x-3">
-                <div className="w-4 h-4 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50"></div>
-                <span className="text-white/80 text-sm">Freezing (&lt; 0°C)</span>
+      {/* Bottom-Left: Weather Legend */}
+      <div className="absolute bottom-6 left-6 z-[1000]">
+        <div className="glass-strong rounded-2xl border border-white/20 overflow-hidden hover-lift">
+          {/* Header */}
+          <div className="p-4 border-b border-white/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Eye className="w-4 h-4 text-cyan-400" />
+                <h3 className="text-sm font-semibold text-white">Weather Legend</h3>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-4 h-4 rounded-full bg-green-500 shadow-lg shadow-green-500/50"></div>
-                <span className="text-white/80 text-sm">Cold (0-15°C)</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsLegendExpanded(!isLegendExpanded)}
+                className="w-6 h-6 rounded-lg hover:bg-white/10 text-white/60 hover:text-white p-0"
+              >
+                {isLegendExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              </Button>
+            </div>
+          </div>
+
+          {/* Content */}
+          {isLegendExpanded && (
+            <div className="p-4 space-y-4 min-w-[280px]">
+              {/* Temperature Scale */}
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-xl bg-gradient-to-r from-red-500 to-orange-500 flex items-center justify-center">
+                    <Thermometer className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-sm text-white font-medium">Temperature</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-4 h-4 rounded-full bg-blue-500 shadow-sm"></div>
+                    <div className="w-4 h-4 rounded-full bg-green-500 shadow-sm"></div>
+                    <div className="w-4 h-4 rounded-full bg-yellow-500 shadow-sm"></div>
+                    <div className="w-4 h-4 rounded-full bg-orange-500 shadow-sm"></div>
+                    <div className="w-4 h-4 rounded-full bg-red-500 shadow-sm"></div>
+                  </div>
+                  <span className="text-xs text-white/70">-10°C to 40°C</span>
+                </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-4 h-4 rounded-full bg-yellow-500 shadow-lg shadow-yellow-500/50"></div>
-                <span className="text-white/80 text-sm">Mild (15-25°C)</span>
+
+              {/* Humidity */}
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center">
+                    <Droplets className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-sm text-white font-medium">Humidity</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-4 h-4 rounded-full bg-gray-400 shadow-sm"></div>
+                    <div className="w-4 h-4 rounded-full bg-blue-300 shadow-sm"></div>
+                    <div className="w-4 h-4 rounded-full bg-blue-500 shadow-sm"></div>
+                    <div className="w-4 h-4 rounded-full bg-blue-700 shadow-sm"></div>
+                  </div>
+                  <span className="text-xs text-white/70">0% to 100%</span>
+                </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-4 h-4 rounded-full bg-red-500 shadow-lg shadow-red-500/50"></div>
-                <span className="text-white/80 text-sm">Hot (&gt; 25°C)</span>
+
+              {/* Wind Speed */}
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center">
+                    <Wind className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-sm text-white font-medium">Wind Speed</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-4 h-4 rounded-full bg-green-400 shadow-sm"></div>
+                    <div className="w-4 h-4 rounded-full bg-yellow-400 shadow-sm"></div>
+                    <div className="w-4 h-4 rounded-full bg-orange-400 shadow-sm"></div>
+                    <div className="w-4 h-4 rounded-full bg-red-400 shadow-sm"></div>
+                  </div>
+                  <span className="text-xs text-white/70">0 to 50+ km/h</span>
+                </div>
               </div>
             </div>
-            
-            {/* Additional Weather Info */}
-            <div className="pt-3 border-t border-white/10 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center space-x-2">
-                  <Droplets className="w-3 h-3 text-blue-400" />
-                  <span className="text-white/70">Humidity</span>
-                </div>
-                <span className="text-white font-medium">65%</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center space-x-2">
-                  <Wind className="w-3 h-3 text-gray-400" />
-                  <span className="text-white/70">Wind</span>
-                </div>
-                <span className="text-white font-medium">12 km/h</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center space-x-2">
-                  <Eye className="w-3 h-3 text-purple-400" />
-                  <span className="text-white/70">Visibility</span>
-                </div>
-                <span className="text-white font-medium">10 km</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       </div>
 
-      {/* Polygon Info Tooltip - Will be positioned dynamically */}
-      <div id="polygon-tooltip" className="absolute z-[1000] pointer-events-none opacity-0 transition-all duration-200">
-        <Card className="glass-strong border-white/20 shadow-2xl">
-          <CardContent className="p-3">
-            <div className="space-y-1">
-              <div className="font-medium text-white text-sm" id="tooltip-name">
-                Polygon Name
-              </div>
-              <div className="text-white/70 text-xs" id="tooltip-temp">
-                Temperature: --°C
-              </div>
-              <div className="text-white/70 text-xs" id="tooltip-coords">
-                Coordinates: --, --
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </>
   );
 }

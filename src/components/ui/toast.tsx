@@ -55,7 +55,7 @@ export function useToast() {
 
 function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: string) => void }) {
   return (
-    <div className="fixed top-20 right-4 z-[9999] space-y-2">
+    <div className="fixed top-20 right-4 z-[9999] space-y-3 max-w-sm">
       {toasts.map(toast => (
         <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
@@ -104,16 +104,18 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
 
   return (
     <div
-      className={`glass-strong border ${getBorderColor()} rounded-xl p-4 min-w-[320px] max-w-md shadow-2xl transition-all duration-200 ${
-        isVisible 
-          ? 'translate-x-0 opacity-100' 
-          : 'translate-x-full opacity-0'
+      className={`glass-strong border ${getBorderColor()} rounded-2xl p-4 min-w-[320px] max-w-md shadow-2xl transition-all duration-300 hover-lift ${
+        isVisible
+          ? 'translate-x-0 opacity-100 scale-100'
+          : 'translate-x-full opacity-0 scale-95'
       }`}
     >
       <div className="flex items-start space-x-3">
-        {getIcon()}
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+          {getIcon()}
+        </div>
         <div className="flex-1 min-w-0">
-          <div className="text-white font-medium text-sm">
+          <div className="text-white font-semibold text-sm">
             {toast.title}
           </div>
           {toast.description && (
@@ -126,7 +128,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
           variant="ghost"
           size="sm"
           onClick={handleRemove}
-          className="w-6 h-6 rounded-full hover:bg-white/10 text-white/60 hover:text-white/80 p-0"
+          className="w-8 h-8 rounded-xl hover:bg-white/10 text-white/60 hover:text-white/80 p-0 flex-shrink-0"
         >
           <X className="w-3 h-3" />
         </Button>

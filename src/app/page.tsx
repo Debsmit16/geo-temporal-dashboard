@@ -2,10 +2,12 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
+import { Activity } from 'lucide-react';
 import HydrationProvider from '@/components/HydrationProvider';
 import Navbar from '@/components/Layout/Navbar';
 import ControlPanel from '@/components/Layout/ControlPanel';
 import MapOverlays from '@/components/Map/MapOverlays';
+import TimelineControl from '@/components/Layout/TimelineControl';
 import { ToastProvider, useToast } from '@/components/ui/toast';
 import { usePolygons, usePolygonActions } from '@/store';
 
@@ -105,32 +107,100 @@ function DashboardContent() {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 overflow-hidden">
-      {/* Futuristic Navbar */}
+    <div className="min-h-screen overflow-hidden">
+      {/* Layer 1: Fixed Navbar */}
       <Navbar
         onToggleTheme={handleToggleTheme}
         isDark={isDarkMode}
       />
 
-      {/* Main Layout - Split Grid */}
-      <div className="flex h-[calc(100vh-4rem)] pt-16">
-        {/* Map Section - 75% Width */}
-        <div className="flex-1 relative">
-          <MapComponent />
+      {/* Layer 2: Main Content Grid */}
+      <main className="h-screen pt-16">
+        <div className="h-full flex">
+          {/* Map Section - Full Width with Margins */}
+          <div className="flex-1 relative px-4 py-4">
+            <div className="h-full w-full relative rounded-3xl overflow-hidden shadow-2xl">
+              <MapComponent />
 
-          {/* Map Overlays */}
-          <MapOverlays
-            onToggleDrawing={handleToggleDrawing}
-            isDrawing={isDrawingMode}
-          />
+              {/* Map Overlays */}
+              <MapOverlays
+                onToggleDrawing={handleToggleDrawing}
+                isDrawing={isDrawingMode}
+              />
+            </div>
+          </div>
+
+          {/* Layer 3: Responsive Drawer Overlay */}
+          {/* Desktop: Right Drawer */}
+          <div className={`hidden lg:block fixed top-16 right-0 h-[calc(100vh-4rem)] z-40 transition-all duration-300 ease-in-out ${
+            isControlPanelCollapsed ? 'translate-x-full' : 'translate-x-0'
+          }`}>
+            <ControlPanel
+              isCollapsed={isControlPanelCollapsed}
+              onToggleCollapse={() => setIsControlPanelCollapsed(!isControlPanelCollapsed)}
+            />
+          </div>
+
+          {/* Mobile: Bottom Drawer */}
+          <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 transition-all duration-300 ease-in-out ${
+            isControlPanelCollapsed ? 'translate-y-full' : 'translate-y-0'
+          }`}>
+            <div className="h-[60vh] glass-strong rounded-t-3xl border-t border-l border-r border-white/10 overflow-hidden animate-slide-in-bottom">
+              {/* Mobile Header */}
+              <div className="p-4 border-b border-white/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-6 h-6 rounded-xl gradient-primary flex items-center justify-center">
+                      <Activity className="w-3 h-3 text-white" />
+                    </div>
+                    <h2 className="text-lg font-semibold text-white">Controls</h2>
+                  </div>
+                  <button
+                    onClick={() => setIsControlPanelCollapsed(true)}
+                    className="w-8 h-8 rounded-xl hover:bg-white/10 text-white/80 hover:text-white p-0 flex items-center justify-center"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                {/* Drag Handle */}
+                <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/30 rounded-full"></div>
+              </div>
+
+              {/* Mobile Content */}
+              <div className="h-[calc(100%-5rem)] overflow-y-auto p-4">
+                <TimelineControl />
+              </div>
+            </div>
+          </div>
+
+          {/* Drawer Toggle Button (when collapsed) */}
+          {isControlPanelCollapsed && (
+            <>
+              {/* Desktop Toggle */}
+              <button
+                onClick={() => setIsControlPanelCollapsed(false)}
+                className="hidden lg:block fixed top-20 right-4 z-50 w-12 h-12 rounded-2xl glass-strong border border-white/20 hover:bg-white/10 text-white/80 hover:text-white transition-all duration-200 hover-lift"
+              >
+                <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+
+              {/* Mobile Toggle */}
+              <button
+                onClick={() => setIsControlPanelCollapsed(false)}
+                className="lg:hidden fixed bottom-4 right-4 z-50 w-14 h-14 rounded-2xl glass-strong border border-white/20 hover:bg-white/10 text-white/80 hover:text-white transition-all duration-200 hover-lift"
+              >
+                <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                </svg>
+              </button>
+            </>
+          )}
         </div>
-
-        {/* Control Panel - 25% Width */}
-        <ControlPanel
-          isCollapsed={isControlPanelCollapsed}
-          onToggleCollapse={() => setIsControlPanelCollapsed(!isControlPanelCollapsed)}
-        />
-      </div>
+      </main>
     </div>
   );
 }
